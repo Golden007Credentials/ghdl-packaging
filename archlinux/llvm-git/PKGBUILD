@@ -1,0 +1,50 @@
+pkgname=ghdl-llvm-git
+pkgver=0.37dev.git20190907
+pkgrel=1
+arch=('any')
+pkgdesc='open-source analyzer, compiler and simulator for VHDL (LLVM backend)'
+url='https://github.com/ghdl/ghdl'
+license=(['GPLv2', 'custom'])
+
+provides=('ghdl')
+conflicts=('ghdl' 'ghdl-mcode-git' 'ghdl-gcc-git' 'ghdl-mcode' 'ghdl-llvm' 'ghdl-gcc')
+makedepends=('gcc-ada' 'git' 'llvm<9' 'clang<9')
+depends=('gcc' 'llvm-libs<9')
+
+source=(
+	"ghdl::git://github.com/ghdl/ghdl.git"
+)
+sha512sums=(
+	'SKIP'
+)
+
+pkgver() {
+	cd "${srcdir}/ghdl"
+	# Date of the last git commit
+	_verdate=`git log -1 --date=short --pretty=format:%cd`
+	if `git describe --exact-match > /dev/null 2>&1` ; then
+		echo "`git describe --tags`.$_verdate" | sed 's/-//g'
+	else
+		git describe --tags --abbrev=10 | sed "s/\([!-]*\)-\(.*\)/\1.$_verdate.\2/g" | sed 's/-//g'
+	fi;
+}
+
+prepare() {
+	cp -vr "${srcdir}/ghdl/testsuite" "${startdir}/"
+}
+
+build() {
+	mkdir "${srcdir}/builddir"
+	cd "${srcdir}/builddir"
+	../ghdl/configure \
+		--prefix=/usr/ \
+		--with-llvm-config \
+		--enable-libghdl \
+		--enable-synth
+	make GNATMAKE="gnatmake -j$(nproc)"
+}
+
+package() {
+	cd "${srcdir}/builddir"
+	make DESTDIR="${pkgdir}" install
+}

@@ -1,0 +1,35 @@
+pkgname=ghdl-mcode
+pkgver=v0.36
+pkgrel=1
+arch=('i686' 'x86_64')
+pkgdesc='open-source analyzer, compiler and simulator for VHDL (mcode backend)'
+url='https://github.com/ghdl/ghdl'
+license=(['GPLv2', 'custom'])
+
+provides=('ghdl')
+conflicts=('ghdl' 'ghdl-mcode-git' 'ghdl-llvm-git' 'ghdl-gcc-git' 'ghdl-llvm' 'ghdl-gcc')
+makedepends=('gcc-ada' 'git')
+depends=('gcc')
+
+source=(
+	"ghdl::git://github.com/ghdl/ghdl.git#tag=${pkgver}"
+)
+sha512sums=(
+	'SKIP'
+)
+
+prepare() {
+	cp -vr "${srcdir}/ghdl/testsuite" "${startdir}/"
+}
+
+build() {
+	mkdir "${srcdir}/builddir"
+	cd "${srcdir}/builddir"
+	../ghdl/configure --prefix=/usr/
+	make GNATMAKE="gnatmake -j$(nproc)"
+}
+
+package() {
+	cd "${srcdir}/builddir"
+	make DESTDIR="${pkgdir}" install
+}

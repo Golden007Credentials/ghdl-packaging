@@ -1,0 +1,49 @@
+_realname=ghdl-llvm-git
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=git
+pkgrel=1
+pkgdesc="open-source analyzer, compiler and simulator for VHDL (LLVM backend) (mingw-w64)"
+arch=('any')
+license=(['GPLv2+', 'custom'])
+url="http://ghdl.free.fr/"
+provides=('ghdl')
+conflicts=('ghdl-mcode' 'ghdl-llvm' 'ghdl-mcode-rc' 'ghdl-llvm-rc' 'ghdl-mcode-git')
+#depends=()
+makedepends=("${MINGW_PACKAGE_PREFIX}-clang" "${MINGW_PACKAGE_PREFIX}-gcc-ada")
+source=(
+  "ghdl::git://github.com/ghdl/ghdl.git"
+)
+sha512sums=(
+  'SKIP'
+)
+
+pkgver() {
+  cd "${srcdir}/ghdl"
+  # Date of the last git commit
+  _verdate=`git log -1 --date=short --pretty=format:%cd`
+  if `git describe --exact-match > /dev/null 2>&1` ; then
+    echo "`git describe --tags`.$_verdate" | sed 's/-//g'
+  else
+    git describe --tags --abbrev=10 | sed "s/\([!-]*\)-\(.*\)/\1.$_verdate.\2/g" | sed 's/-//g'
+  fi;
+}
+
+prepare() {
+  cp -vr "${srcdir}/ghdl/testsuite" "${startdir}/"
+}
+
+build() {
+  mkdir "${srcdir}/builddir"
+  cd "${srcdir}/builddir"
+  ../ghdl/configure --prefix=${MINGW_PREFIX} --with-llvm-config LDFLAGS=-static --enable-libghdl --enable-synth
+  make GNATMAKE="gnatmake -j$(nproc)"
+}
+
+# FIXME: Cannot run tests because expected failures make 'check()' exit with error: A failure occurred in check()
+
+package() {
+  cd "${srcdir}/builddir"
+  mkdir -p "${pkgdir}${MINGW_PREFIX}/lib"
+  make DESTDIR="${pkgdir}" install
+}

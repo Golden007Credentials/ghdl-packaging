@@ -1,0 +1,39 @@
+pkgname=ghdl-llvm
+pkgver=v0.36
+pkgrel=1
+arch=('any')
+pkgdesc='open-source analyzer, compiler and simulator for VHDL (LLVM backend)'
+url='https://github.com/ghdl/ghdl'
+license=(['GPLv2+', 'custom'])
+
+provides=('ghdl')
+conflicts=('ghdl' 'ghdl-mcode-git' 'ghdl-llvm-git' 'ghdl-gcc-git' 'ghdl-mcode' 'ghdl-gcc')
+makedepends=('gcc-ada' 'git' 'llvm<9' 'clang<9')
+depends=('gcc' 'llvm-libs<9')
+
+source=(
+	"ghdl::git://github.com/ghdl/ghdl.git#tag=${pkgver}"
+	'ghdl-llvm8.patch'
+)
+sha512sums=(
+	'SKIP'
+	'f086ecc6219a684f43e366872c72834d778f3cb194ac80b0e8835785f260a31b353a04478aa18145c1e709471b554504194bee2669e1031b4e5bdf29cc6a948f'
+)
+
+prepare() {
+	patch -p0 -i "${startdir}/ghdl-llvm8.patch"
+
+	cp -vr "${srcdir}/ghdl/testsuite" "${startdir}/"
+}
+
+build() {
+	mkdir "${srcdir}/builddir"
+	cd "${srcdir}/builddir"
+	../ghdl/configure --prefix=/usr/ --with-llvm-config
+	make GNATMAKE="gnatmake -j$(nproc)"
+}
+
+package() {
+	cd "${srcdir}/builddir"
+	make DESTDIR="${pkgdir}" install
+}

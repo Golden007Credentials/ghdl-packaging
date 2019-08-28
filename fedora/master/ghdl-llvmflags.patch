@@ -1,0 +1,11 @@
+--- ghdl/src/ortho/llvm4-nodebug/Makefile	2019-01-29 17:30:36.024252822 +0100
++++ ghdl/src/ortho/llvm4-nodebug/Makefile	2019-01-29 17:31:18.958454509 +0100
+@@ -15,7 +15,7 @@
+ 	$(LDFLAGS) `$(LLVM_CONFIG) --ldflags --libs --system-libs`
+ 
+ llvm-cbindings.o: $(ortho_srcdir)/llvm4-nodebug/llvm-cbindings.cpp
+-	$(CXX) -c `$(LLVM_CONFIG) --cxxflags` -o $@ $<
++	$(CXX) -c `$(LLVM_CONFIG) --cxxflags|sed -e s,-fstack-clash-protection,,` -o $@ $<
+ 
+ clean:
+ 	$(RM) -f *.o *.ali ortho_code_main

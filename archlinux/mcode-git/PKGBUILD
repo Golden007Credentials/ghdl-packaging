@@ -1,0 +1,46 @@
+pkgname=ghdl-mcode-git
+pkgver=0.37dev.git20190907
+pkgrel=1
+arch=('i686' 'x86_64')
+pkgdesc='open-source analyzer, compiler and simulator for VHDL (mcode backend)'
+url='https://github.com/ghdl/ghdl'
+license=(['GPLv2', 'custom'])
+
+provides=('ghdl')
+conflicts=('ghdl' 'ghdl-llvm-git' 'ghdl-gcc-git' 'ghdl-mcode' 'ghdl-llvm' 'ghdl-gcc')
+makedepends=('gcc-ada' 'git')
+depends=('gcc')
+
+source=(
+	"ghdl::git://github.com/ghdl/ghdl.git"
+)
+sha512sums=(
+	'SKIP'
+)
+
+pkgver() {
+	cd "${srcdir}/ghdl"
+	# Date of the last git commit
+	_verdate=`git log -1 --date=short --pretty=format:%cd`
+	if `git describe --exact-match > /dev/null 2>&1` ; then
+		echo "`git describe --tags`.$_verdate" | sed 's/-//g'
+	else
+		git describe --tags --abbrev=10 | sed "s/\([!-]*\)-\(.*\)/\1.$_verdate.\2/g" | sed 's/-//g'
+	fi;
+}
+
+prepare() {
+	cp -vr "${srcdir}/ghdl/testsuite" "${startdir}/"
+}
+
+build() {
+	mkdir "${srcdir}/builddir"
+	cd "${srcdir}/builddir"
+	../ghdl/configure --prefix=/usr/ --enable-libghdl --enable-synth
+	make GNATMAKE="gnatmake -j$(nproc)"
+}
+
+package() {
+	cd "${srcdir}/builddir"
+	make DESTDIR="${pkgdir}" install
+}

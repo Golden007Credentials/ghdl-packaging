@@ -1,0 +1,53 @@
+name: 'mingw'
+
+on:
+  push:
+    paths:
+      - '.github/workflows/mingw.yml'
+      - 'msys2-mingw/run.sh'
+      - 'msys2-mingw/mcode/*'
+      - 'msys2-mingw/llvm/*'
+  schedule:
+    - cron: '0 0 * * 5'
+
+env:
+  CI: true
+
+jobs:
+
+  win:
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        task: [
+          {installs: "MINGW32", pkg: "mcode"},
+          #{installs: "MINGW32", pkg: "llvm-git"},  ! Not yet functional
+          #{installs: "MINGW64", pkg: "mcode-git"}, ! mcode it not yet supported on win64
+          {installs: "MINGW64", pkg: "llvm"},
+        ]
+    runs-on: windows-latest
+    env:
+      MINGW_INSTALLS: ${{ matrix.task.installs }}
+      TARGET: ${{ matrix.task.pkg }}
+    steps:
+    - uses: numworks/setup-msys2@v1
+      with:
+        msystem: MSYS
+    - run: msys2do pacman -Syu --noconfirm
+    - uses: actions/checkout@v1
+    - name: Build and (hopefully) install package
+      run: |
+        msys2do ./msys2-mingw/run.sh -b
+    - name: Test package
+      run: msys2do ./msys2-mingw/run.sh -t
+      env:
+        MSYSTEM: ${{ matrix.task.installs }}
+    - uses: actions/upload-artifact@master
+      with:
+        name: ${{ matrix.task.pkg }}-package
+        path: msys2-mingw/${{ matrix.task.pkg }}/tarball
+    - uses: actions/upload-artifact@master
+      with:
+        name: ${{ matrix.task.pkg }}-sources
+        path: msys2-mingw/${{ matrix.task.pkg }}/srcs

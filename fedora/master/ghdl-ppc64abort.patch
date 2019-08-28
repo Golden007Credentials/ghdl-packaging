@@ -1,0 +1,13 @@
+diff -up gcc/config/rs6000/rs6000.c.orig gcc/config/rs6000/rs6000.c
+--- gcc/config/rs6000/rs6000.c.orig	2019-08-23 13:21:47.463294109 +0200
++++ gcc/config/rs6000/rs6000.c	2019-08-23 13:22:10.990328958 +0200
+@@ -29147,7 +29147,8 @@ rs6000_output_function_epilogue (FILE *f
+ 	  || ! strcmp (language_string, "GNU GIMPLE")
+ 	  || ! strcmp (language_string, "GNU Go")
+ 	  || ! strcmp (language_string, "GNU D")
+-	  || ! strcmp (language_string, "libgccjit"))
++	  || ! strcmp (language_string, "libgccjit")
++	  || ! strcmp (language_string, "vhdl"))
+ 	i = 0;
+       else if (! strcmp (language_string, "GNU F77")
+ 	       || lang_GNU_Fortran ())

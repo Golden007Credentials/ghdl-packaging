@@ -1,0 +1,36 @@
+name: 'fedora'
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fedora.yml'
+      - 'fedora/master.sh'
+      - 'fedora/master/*'
+  schedule:
+    - cron: '0 0 * * 5'
+
+env:
+  CI: true
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: |
+        ./fedora/master.sh
+    - uses: actions/upload-artifact@master
+      with:
+        name: src.rpm
+        path: fedora/srpm-master
+    - uses: actions/upload-artifact@master
+      with:
+        name: x86_64
+        path: fedora/x86_64-master
+    - uses: actions/upload-artifact@master
+      with:
+        name: package sources
+        path: fedora/master

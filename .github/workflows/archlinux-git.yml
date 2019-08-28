@@ -1,0 +1,45 @@
+name: 'archlinux-git'
+
+on:
+  push:
+    paths:
+      - '.github/workflows/archlinux-git.yml'
+      - 'archlinux/run.sh'
+      - 'archlinux/mcode-git/*'
+      - 'archlinux/llvm-git/*'
+      - 'archlinux/gcc-git/*'
+  schedule:
+    - cron: '0 0 * * 5'
+
+env:
+  CI: true
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        pkg: [
+          'mcode-git',
+          'llvm-git',
+          'gcc-git'
+        ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - run: |
+        ./archlinux/run.sh
+      env:
+        TARGET: ${{ matrix.pkg }}
+    - name: Upload package
+      uses: actions/upload-artifact@master
+      with:
+        name: package
+        path: archlinux/${{ matrix.pkg }}/tarball
+    - name: Upload sources
+      uses: actions/upload-artifact@master
+      with:
+        name: sources
+        path: archlinux/${{ matrix.pkg }}/srcs
