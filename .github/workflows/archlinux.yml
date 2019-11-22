@@ -9,7 +9,7 @@ on:
       - 'archlinux/llvm/*'
       - 'archlinux/gcc/*'
   schedule:
-    - cron: '0 0 * * 5'
+    - cron: '0 0 * * 2,5'
 
 env:
   CI: true

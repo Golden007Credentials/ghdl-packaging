@@ -8,7 +8,7 @@ on:
       - 'msys2-mingw/mcode/*'
       - 'msys2-mingw/llvm/*'
   schedule:
-    - cron: '0 0 * * 5'
+    - cron: '0 0 * * 2,5'
 
 env:
   CI: true
